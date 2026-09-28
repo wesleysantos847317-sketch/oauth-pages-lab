@@ -1,4 +1,8 @@
-export async function onRequest() {
+export async function onRequest(context) {
+  const request = context?.request ?? context ?? new Request('http://localhost/api/health');
+
+  void request;
+
   return new Response(
     JSON.stringify({
       status: 'ok',

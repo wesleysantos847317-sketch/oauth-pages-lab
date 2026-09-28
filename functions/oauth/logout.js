@@ -1,6 +1,7 @@
 import { clearCookie } from '../_shared/cookies.js';
 
-export async function onRequest(request) {
+export async function onRequest(context) {
+  const request = context?.request ?? context ?? new Request('http://localhost/oauth/logout');
   const isSecure = new URL(request.url).protocol === 'https:';
   let response = Response.redirect(new URL('/', request.url).toString(), 302);
 

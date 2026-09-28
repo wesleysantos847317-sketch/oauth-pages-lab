@@ -1,6 +1,7 @@
 import { getCookieValue } from '../_shared/cookies.js';
 
-export async function onRequest(request) {
+export async function onRequest(context) {
+  const request = context?.request ?? context;
   const userCookie = getCookieValue(request, 'oauth_user');
 
   if (!userCookie) {

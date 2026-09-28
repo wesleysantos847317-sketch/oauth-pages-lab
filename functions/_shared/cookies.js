@@ -1,4 +1,8 @@
 export function getCookieValue(request, name) {
+  if (!request || typeof request !== 'object' || !request.headers || typeof request.headers.get !== 'function') {
+    return null;
+  }
+
   const cookieHeader = request.headers.get('Cookie') || '';
   const cookiePairs = cookieHeader.split(';').map((item) => item.trim());
 
