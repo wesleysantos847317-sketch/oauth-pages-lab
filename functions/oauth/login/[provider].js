@@ -1,7 +1,6 @@
-import { createCodeChallenge, createNonce, generateState } from '../../_shared/crypto.js';
+import { generateState } from '../../_shared/crypto.js';
 import { setCookie } from '../../_shared/cookies.js';
-import { isDemoMode, isSupportedProvider } from '../../_shared/providers.js';
-import { buildAuthorizeUrl } from '../../_shared/oidc.js';
+import { getProviderConfig, isSupportedProvider } from '../../_shared/providers.js';
 
 export async function onRequest(context) {
   const { request, params, env } = context;
@@ -16,29 +15,14 @@ export async function onRequest(context) {
 
   const state = generateState();
   const isSecure = new URL(request.url).protocol === 'https:';
-  const demoMode = isDemoMode(provider, env);
+  const config = getProviderConfig(provider, env);
+  const redirectUri = new URL(`/oauth/callback/${provider}`, request.url).toString();
 
-  let redirectUrl;
-  let verifier;
+  const isDemoMode = !env.GITHUB_CLIENT_ID || env.GITHUB_CLIENT_ID === 'demo-github-client-id';
 
-  if (demoMode) {
-    redirectUrl = new URL(`/oauth/callback/${provider}?code=demo-${provider}-code&state=${state}`, request.url).toString();
-  } else {
-    verifier = createNonce(64);
-    const challenge = await createCodeChallenge(verifier);
-    redirectUrl = buildAuthorizeUrl(provider, request, state, challenge, env);
-  }
-
-  let response = Response.redirect(redirectUrl, 302);
-  response = setCookie(response, `oauth_state_${provider}`, state, {
-    httpOnly: true,
-    secure: isSecure,
-    path: '/',
-    sameSite: 'Lax',
-  });
-
-  if (!demoMode) {
-    response = setCookie(response, `oauth_code_verifier_${provider}`, verifier, {
+  if (isDemoMode) {
+    const response = Response.redirect(`${new URL(`/oauth/callback/${provider}?code=demo-github-code&state=${state}`, request.url).toString()}`, 302);
+    return setCookie(response, `oauth_state_${provider}`, state, {
       httpOnly: true,
       secure: isSecure,
       path: '/',
@@ -46,5 +30,21 @@ export async function onRequest(context) {
     });
   }
 
-  return response;
+  const paramsUrl = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: redirectUri,
+    response_type: 'code',
+    scope: config.scope,
+    state,
+  });
+
+  const authorizeUrl = `${config.authorizeUrl}?${paramsUrl.toString()}`;
+  const response = Response.redirect(authorizeUrl, 302);
+
+  return setCookie(response, `oauth_state_${provider}`, state, {
+    httpOnly: true,
+    secure: isSecure,
+    path: '/',
+    sameSite: 'Lax',
+  });
 }
