@@ -1,0 +1,15 @@
+{
+  "name": "oauth-pages-lab",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler pages dev public --compatibility-date=2024-01-01",
+    "start": "npx serve public",
+    "test": "echo \"Nenhum teste configurado ainda\" && exit 0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1",
+    "wrangler": "^3.103.0"
+  }
+}

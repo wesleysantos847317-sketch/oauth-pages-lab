@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OAuth Pages Lab</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <section class="card login-card">
+        <p class="eyebrow">Autenticação OAuth</p>
+        <h1>OAuth Pages Lab</h1>
+        <p class="subtitle">
+          Demonstração de login com provedores e fluxo de callback.
+        </p>
+
+        <div class="actions">
+          <button class="btn btn-primary" data-provider="google">
+            Entrar com Google
+          </button>
+          <button class="btn btn-secondary" data-provider="github">
+            Entrar com GitHub
+          </button>
+        </div>
+
+        <button id="health-check" class="btn btn-ghost">
+          Verificar saúde da API
+        </button>
+      </section>
+
+      <section class="card user-card">
+        <h2>Estado da sessão</h2>
+        <div id="status" class="status status-offline">
+          Ainda não autenticado.
+        </div>
+
+        <div id="user-profile" class="profile hidden">
+          <div class="avatar" id="avatar">U</div>
+          <div>
+            <h3 id="user-name">Usuário</h3>
+            <p id="user-email">email@exemplo.com</p>
+            <p id="user-provider">provedor</p>
+          </div>
+        </div>
+
+        <button id="logout-btn" class="btn btn-danger hidden">
+          Sair
+        </button>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
