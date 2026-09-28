@@ -1,0 +1,7 @@
+{
+  "projectName": "oauth-pages-lab",
+  "framework": "none",
+  "buildCommand": "npm install",
+  "outputDirectory": "public",
+  "deploymentMode": "pages"
+}
