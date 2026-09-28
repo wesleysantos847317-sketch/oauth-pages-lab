@@ -1,15 +1,15 @@
-import { providers } from './providers.js';
+import { getProviderConfig } from './providers.js';
 
-export function buildAuthorizeUrl(provider, request, state, codeChallenge) {
-  const config = providers[provider];
+export function buildAuthorizeUrl(provider, request, state, codeChallenge, env = {}) {
+  const config = getProviderConfig(provider, env);
   if (!config) {
     throw new Error(`Provider não suportado: ${provider}`);
   }
 
-  const redirectUri = new URL(`/oauth/callback/${provider}`, request.url).toString();
+  const baseUrl = env.APP_URL ? new URL(`/oauth/callback/${provider}`, env.APP_URL).toString() : new URL(`/oauth/callback/${provider}`, request.url).toString();
   const params = new URLSearchParams({
     client_id: config.clientId,
-    redirect_uri: redirectUri,
+    redirect_uri: baseUrl,
     response_type: config.responseType,
     scope: config.scope,
     state,

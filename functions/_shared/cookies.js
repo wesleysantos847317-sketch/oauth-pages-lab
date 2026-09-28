@@ -12,6 +12,17 @@ export function getCookieValue(request, name) {
   return null;
 }
 
+function cloneResponseWithCookie(response, cookieValue) {
+  const headers = new Headers(response.headers);
+  headers.append('Set-Cookie', cookieValue);
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export function setCookie(response, name, value, options = {}) {
   const cookieOptions = {
     path: '/',
@@ -30,11 +41,22 @@ export function setCookie(response, name, value, options = {}) {
   if (cookieOptions.httpOnly) parts.push('HttpOnly');
   if (cookieOptions.secure) parts.push('Secure');
 
-  response.headers.append('Set-Cookie', parts.join('; '));
-  return response;
+  return cloneResponseWithCookie(response, parts.join('; '));
 }
 
-export function clearCookie(response, name, path = '/') {
-  response.headers.append('Set-Cookie', `${name}=; Path=${path}; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
-  return response;
+export function clearCookie(response, name, path = '/', options = {}) {
+  const cookieOptions = {
+    sameSite: 'Lax',
+    httpOnly: true,
+    secure: true,
+    ...options,
+  };
+
+  const parts = [`${name}=`, `Path=${path}`, `Max-Age=0`];
+
+  if (cookieOptions.sameSite) parts.push(`SameSite=${cookieOptions.sameSite}`);
+  if (cookieOptions.httpOnly) parts.push('HttpOnly');
+  if (cookieOptions.secure) parts.push('Secure');
+
+  return cloneResponseWithCookie(response, parts.join('; '));
 }

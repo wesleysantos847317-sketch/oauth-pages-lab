@@ -1,10 +1,10 @@
-import { generateState } from '../../_shared/crypto.js';
+import { createCodeChallenge, createNonce, generateState } from '../../_shared/crypto.js';
 import { setCookie } from '../../_shared/cookies.js';
-import { isSupportedProvider } from '../../_shared/providers.js';
+import { isDemoMode, isSupportedProvider } from '../../_shared/providers.js';
 import { buildAuthorizeUrl } from '../../_shared/oidc.js';
 
 export async function onRequest(context) {
-  const { request, params } = context;
+  const { request, params, env } = context;
   const provider = params.provider;
 
   if (!isSupportedProvider(provider)) {
@@ -15,19 +15,36 @@ export async function onRequest(context) {
   }
 
   const state = generateState();
-  const challenge = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(state));
-  const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(challenge)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/g, '');
+  const isSecure = new URL(request.url).protocol === 'https:';
+  const demoMode = isDemoMode(provider, env);
 
-  const authorizeUrl = buildAuthorizeUrl(provider, request, state, codeChallenge);
-  const response = Response.redirect(authorizeUrl, 302);
+  let redirectUrl;
+  let verifier;
 
-  return setCookie(response, `oauth_state_${provider}`, state, {
+  if (demoMode) {
+    redirectUrl = new URL(`/oauth/callback/${provider}?code=demo-${provider}-code&state=${state}`, request.url).toString();
+  } else {
+    verifier = createNonce(64);
+    const challenge = await createCodeChallenge(verifier);
+    redirectUrl = buildAuthorizeUrl(provider, request, state, challenge, env);
+  }
+
+  let response = Response.redirect(redirectUrl, 302);
+  response = setCookie(response, `oauth_state_${provider}`, state, {
     httpOnly: true,
-    secure: true,
+    secure: isSecure,
     path: '/',
     sameSite: 'Lax',
   });
+
+  if (!demoMode) {
+    response = setCookie(response, `oauth_code_verifier_${provider}`, verifier, {
+      httpOnly: true,
+      secure: isSecure,
+      path: '/',
+      sameSite: 'Lax',
+    });
+  }
+
+  return response;
 }
