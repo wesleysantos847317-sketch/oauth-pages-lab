@@ -52,6 +52,21 @@ Ou em modo estático:
 npm run start
 ```
 
+## Deploy no Cloudflare Pages
+
+Para deploy conectado ao Git, configure o projeto Cloudflare Pages com:
+
+- Comando de build: `npm install`
+- Diretório de saída: `public`
+
+Não configure `wrangler deploy`: esse comando publica Workers e não é o comando de deploy deste projeto Pages. Se fizer o deploy manualmente pelo Wrangler, use:
+
+```bash
+npm run deploy
+```
+
+O projeto Cloudflare Pages `oauth-pages-lab` precisa existir e o Wrangler deve estar autenticado (`npx wrangler login`). Mantenha a pasta `functions/` na raiz do repositório para publicar também as rotas de API e OAuth.
+
 ## Configuração do GitHub
 
 No painel do Cloudflare Pages, adicione estas variáveis de ambiente:

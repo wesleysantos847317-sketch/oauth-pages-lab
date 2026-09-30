@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npx wrangler pages dev public --compatibility-date=2024-01-01",
     "start": "npx serve public",
+    "deploy": "npx wrangler pages deploy public --project-name oauth-pages-lab",
     "test": "echo \"Nenhum teste configurado ainda\" && exit 0"
   },
   "devDependencies": {
